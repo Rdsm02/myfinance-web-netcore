@@ -1,0 +1,107 @@
+﻿@using MyFinance.App.ViewModels
+@model MyFinance.App.ViewModels.TransactionReportViewModel
+@{
+    ViewData["Title"] = "Relatório de transações por período";
+
+    string vStartDate = string.Empty;
+    string vEndDate = string.Empty;
+    
+    var debito = ViewBag.DebitoTemp;
+    var credito = ViewBag.CreditoTemp;
+
+    if (Model.StartDate != null)
+    {
+        vStartDate = DateTime.Parse(Model.StartDate.ToString()).ToString("yyyy-MM-dd");
+    }
+
+    if (Model.EndDate != null)
+    {
+        vEndDate = DateTime.Parse(Model.EndDate.ToString()).ToString("yyyy-MM-dd");
+    }
+}
+
+<h3>@ViewData["Title"]</h3>
+
+<hr>
+
+<form asp-controller="Transaction" asp-action="TransactionsReport">
+    <div class="form-group">
+        <label>Data inicial do período:</label>
+        <input type="date" class="form-control" asp-for="StartDate" value="@vStartDate">
+        <span asp-validation-for="StartDate" class="text-danger"></span>
+        <label>Data final do período:</label>
+        <input type="date" class="form-control" asp-for="EndDate" value="@vEndDate">
+        <span asp-validation-for="StartDate" class="text-danger"></span>
+    </div>
+
+    <button type="submit" class="btn btn-block btn-success">Filtrar</button>
+    <td><button type="button" class="btn btn-block btn-warning" onclick="loadDraft(@debito, @credito);">Gerar Gráfico</button></td>
+</form>
+
+<hr>
+
+<table class="table table-bordered">
+    <tr>
+        <th>ID</th>
+        <th>Data</th>
+        <th>Tipo</th>
+        <th>Valor</th>
+        <th>Histórico</th>
+        <th>Plano de conta</th>
+    </tr>
+
+    @{
+        foreach (TransactionViewModel transaction in Model.Transactions)
+        {
+                <tr>
+                    <td>@transaction.Id</td>
+                    <td>@transaction.Date</td>
+                    <td>@transaction.Type</td>
+                    <td>@transaction.Value</td>
+                    <td>@transaction.History</td>
+
+                </tr>
+        }
+    }
+
+</table>
+
+<div style="margin-left: auto; margin-right: auto; width: 300px; height: 100px;">
+
+    <canvas id="myChart" width="400px" height="400px"></canvas>
+
+</div>
+
+
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/3.9.1/chart.js"></script>
+<script>
+var chart = null;
+    function loadDraft(d, c) {
+        if (chart != null) {
+            chart.destroy();
+        }
+        const data = {
+            labels: [
+                'Débito',
+                'Credito'
+            ],
+            datasets: [{
+                label: 'My First Dataset',
+                data: [d, c],
+                backgroundColor: [
+                    'rgb(255, 99, 132)',
+                    'rgb(54, 162, 235)'
+                ],
+                hoverOffset: 4
+            }]
+        };
+        const config = {
+            type: 'pie',
+            data: data,
+        };
+        const ctx = document.getElementById('myChart').getContext('2d');
+        const myChart = new Chart(ctx, config);
+        chart = myChart;
+    }
+</script>
